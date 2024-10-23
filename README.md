@@ -1,9 +1,9 @@
 # Credit-Card-Fraud-Detection-R-prog
 It is a credit card fraud detection project. 
 
-language - R programming language
-IDE - Rstudio
-format .Rmd for directly visualizing data over any browser just like jupyter notebook.
+> language - R programming language
+> IDE - Rstudio
+> format .Rmd for directly visualizing data over any browser just like jupyter notebook.
 
 ## Objective
 Detect fraudulent credit card transactions using machine learning.
