@@ -1,0 +1,148 @@
+---
+title: "Credit card fraud detection"
+author: "Om K, Ayush D"
+date: "2024-10-11"
+output: html_document
+---
+
+## Loading Libraries
+
+Installing and loading the necessary packages.
+
+```{r}
+install.packages(c("ggplot2", "dplyr", "caret", "caTools", "ROSE", "corrplot", "glmnet"))
+library(ggplot2)
+library(dplyr)
+library(caret)
+library(caTools)
+library(ROSE)  # For handling class imbalance
+library(corrplot)
+library(glmnet)
+```
+
+# 1. Data preprocessing
+
+## Loading and Inspecting the Data
+
+Reading dataset into R:
+
+```{r}
+library(readr)
+creditcard <- read_csv("creditcard.csv")
+View(creditcard)
+```
+
+## Checking for missing values:
+
+```{r}
+sum(is.na(creditcard))
+```
+
+# Task 2: Handling Class Imbalance
+
+## Check the class distribution before balancing
+
+```{r}
+table(creditcard$Class)
+```
+
+## Apply Random Oversampling using the ROSE package
+
+```{r}
+set.seed(42) 
+balanced_data <- ovun.sample(Class ~ ., data =
+creditcard, method = "over", 
+N = 2 * table(creditcard$Class)[1])$data
+```
+
+## Check the class distribution after balancing
+
+```{r}
+table(balanced_data$Class)
+```
+
+## Split the balanced data into train and test sets
+
+```{r}
+
+library(caTools)
+set.seed(42)
+
+
+split <- sample.split(balanced_data$Class, SplitRatio = 0.7)
+
+
+train_data <- subset(balanced_data, split == TRUE)
+test_data <- subset(balanced_data, split == FALSE)
+
+```
+
+## Make predictions on the test set
+
+```{r}
+predictions <- predict(model, test_data, type = "response") 
+pred_class <- ifelse(predictions > 0.5, 1, 0)
+```
+
+## Evaluate the model with a confusion matrix
+
+```{r}
+library(caret) 
+confusionMatrix(as.factor(pred_class), as.factor(test_data$Class))
+```
+
+# Task 3.Exploratory Data Analysis (EDA)
+
+```{r}
+summary(creditcard)
+var(creditcard)
+boxplot(creditcard)
+plot(x=creditcard$Time, y= creditcard$Amount, xlab = "Time", ylab = "Amount", xlim = c(500, 800), ylim = c(2, 35.90),
+    main = "Time vs Amount")
+```
+
+# 4. Data visualization
+
+```{r}
+# Install ggplot2 if not already installed
+# install.packages("ggplot2")
+
+# Load ggplot2 library
+library(ggplot2)
+
+# Create a scatter plot of Time vs Amount, colored by the Class (Fraud or Legitimate)
+ggplot(creditcard, aes(x = Time, y = Amount, color = factor(Class))) +
+  geom_point(alpha = 0.5) +
+  labs(
+    title = "Credit Card Transactions: Time vs. Amount",
+    x = "Time (in seconds since first transaction)",
+    y = "Transaction Amount",
+    color = "Class"
+  ) +
+  theme_minimal() +
+  scale_color_manual(values = c("0" = "blue", "1" = "red"))  # Blue for legitimate, Red for fraud
+
+```
+
+# Fraudulent vs Non - Fraudulent
+
+```{r}
+# Install ggplot2 if not already installed
+# install.packages("ggplot2")
+
+# Load ggplot2 library
+library(ggplot2)
+
+# Create a bar plot showing the count of fraudulent vs non-fraudulent transactions
+ggplot(creditcard, aes(x = factor(Class), fill = factor(Class))) +
+  geom_boxplot() +
+  labs(
+    title = "Fraudulent vs Non-Fraudulent Transactions",
+    x = "Transaction Class",
+    y = "Count of Transactions",
+    fill = "Class"
+  ) +
+  scale_fill_manual(values = c("0" = "blue", "1" = "red"), labels = c("Non-Fraudulent", "Fraudulent")) +
+  theme_minimal()
+
+```
